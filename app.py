@@ -387,6 +387,10 @@ st.write(f"Displaying {len(display_df)} of {len(filtered_df)} items indexed.")
 # STATISTICS SECTION
 # -----------------------------------
 st.subheader("📊 Structural Aggregates")
+# -----------------------------------
+# STATISTICS SECTION
+# -----------------------------------
+st.subheader("📊 Structural Aggregates")
 
 col1, col2, col3 = st.columns(3)
 
@@ -398,7 +402,23 @@ with col1:
     )
 
 with col2:
+    if len(filtered_df) > 0:
+        most_common_act = filtered_df["Activity Type"].mode()[0]
+        act_count = len(filtered_df[filtered_df["Activity Type"] == most_common_act])
+        metric_label = f"{act_count} Logged Cycles"
+    else:
+        most_common_act = "N/A"
+        metric_label = "0 instances"
+
     st.metric(
         "Dominant System Function",
-        filtered_df["Activity Type"].mode()[0] if len(filtered_df) > 0 else "N/A",
-        f"{len(filtered_df[filtered_df['Activity Type'] == filtered_df
+        most_common_act,
+        metric_label
+    )
+
+with col3:
+    st.metric(
+        "Active Operation Window Range",
+        f"{filtered_df['Date'].min().date()} — {filtered_df['Date'].max().date()}" if len(filtered_df) > 0 else "N/A",
+        f"{(filtered_df['Date'].max() - filtered_df['Date'].min()).days + 1} Spanning Days" if len(filtered_df) > 0 else "0 days"
+    )
