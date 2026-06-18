@@ -36,22 +36,31 @@ def load_data():
         # Clean column names
         df.columns = df.columns.str.strip()
 
-        # Convert Date column
-        df["Date"] = pd.to_datetime(df["Date"])
+        # Convert Date column safely
+        df["Date"] = pd.to_datetime(df["Date"], errors='coerce')
 
-        # Create Start and End datetime
+        # Clean up missing or broken times by replacing dashes/spaces with NaN
+        df["Start Time"] = df["Start Time"].astype(str).str.strip().replace(['-', 'nan', ''], None)
+        df["End Time"] = df["End Time"].astype(str).str.strip().replace(['-', 'nan', ''], None)
+
+        # Create Start and End datetime safely using errors='coerce'
         df["Start"] = pd.to_datetime(
-            df["Date"].dt.strftime("%Y-%m-%d")
-            + " "
-            + df["Start Time"].astype(str)
+            df["Date"].dt.strftime("%Y-%m-%d") + " " + df["Start Time"],
+            errors='coerce'
         )
 
         df["End"] = pd.to_datetime(
-            df["Date"].dt.strftime("%Y-%m-%d")
-            + " "
-            + df["End Time"].astype(str)
+            df["Date"].dt.strftime("%Y-%m-%d") + " " + df["End Time"],
+            errors='coerce'
         )
 
+        # Drop rows where dates or times couldn't be parsed
+        df = df.dropna(subset=["Date", "Start", "End"])
+
+        return df
+    except Exception as e:
+        st.error(f"❌ Error loading data: {str(e)}")
+        return None
         return df
     except Exception as e:
         st.error(f"❌ Error loading data: {str(e)}")
