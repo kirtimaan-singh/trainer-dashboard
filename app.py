@@ -67,29 +67,21 @@ def load_data():
         return None
 
 df = load_data()
-
-if df is None:
-    st.stop()
-
-# -----------------------------------
-# SIDEBAR FILTERS
-# -----------------------------------
-st.sidebar.header("🔍 Filters")
-
-# Date range filter
-date_range = st.sidebar.date_input(
-    "Date Range",
-    value=(df["Date"].min().date(), df["Date"].max().date()),
-    min_value=df["Date"].min().date(),
-    max_value=df["Date"].max().date()
-)
-
-# Trainer filter
-trainer_filter = st.sidebar.multiselect(
-    "Trainer",
-    sorted(df["Trainer Name"].dropna().unique()),
-    default=sorted(df["Trainer Name"].dropna().unique())
-)
+# Apply filters safely
+if isinstance(date_range, tuple) and len(date_range) == 2:
+    start_date, end_date = date_range
+    filtered_df = df[
+        (df["Trainer Name"].isin(trainer_filter))
+        & (df["Activity Type"].isin(activity_filter))
+        & (df["Date"].dt.date >= start_date)
+        & (df["Date"].dt.date <= end_date)
+    ]
+else:
+    # Fallback if the user is in the middle of picking a date range
+    filtered_df = df[
+        (df["Trainer Name"].isin(trainer_filter))
+        & (df["Activity Type"].isin(activity_filter))
+    ]
 
 # Activity filter
 activity_filter = st.sidebar.multiselect(
